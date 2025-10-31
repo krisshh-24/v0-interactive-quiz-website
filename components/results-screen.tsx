@@ -37,7 +37,7 @@ export default function ResultsScreen({ answers, questions, onRestart }: Results
 
   return (
     <main className="min-h-screen bg-background flex items-center justify-center px-4 py-8">
-      <Card className="w-full max-w-2xl p-8 bg-card border-border">
+      <Card className="w-full max-w-4xl p-8 bg-card border-border">
         {/* Results Header */}
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-foreground mb-4">Quiz Complete!</h1>
@@ -53,68 +53,106 @@ export default function ResultsScreen({ answers, questions, onRestart }: Results
         <div className="bg-card border border-border rounded-lg p-6 mb-8 text-center">
           {percentage >= 80 && (
             <p className="text-lg text-foreground font-semibold">
-              🎉 Excellent! You have a strong understanding of the material!
+              Excellent! You have a strong understanding of the material!
             </p>
           )}
           {percentage >= 60 && percentage < 80 && (
-            <p className="text-lg text-foreground font-semibold">
-              👍 Great job! You have a good grasp of the concepts.
-            </p>
+            <p className="text-lg text-foreground font-semibold">Great job! You have a good grasp of the concepts.</p>
           )}
           {percentage >= 40 && percentage < 60 && (
-            <p className="text-lg text-foreground font-semibold">📚 Good effort! Review the material and try again.</p>
+            <p className="text-lg text-foreground font-semibold">Good effort! Review the material and try again.</p>
           )}
           {percentage < 40 && (
             <p className="text-lg text-foreground font-semibold">
-              💪 Keep practicing! Review the concepts and retake the quiz.
+              Keep practicing! Review the concepts and retake the quiz.
             </p>
           )}
         </div>
 
-        {/* Answer Review */}
-        <div className="space-y-4 mb-8 max-h-96 overflow-y-auto">
-          <h2 className="text-xl font-bold text-foreground mb-4">Answer Review</h2>
-          {questions.map((question, idx) => {
-            const userAnswer = answers[idx]
-            const isCorrect = userAnswer === question.correctAnswer
-            const userAnswerText =
-              question.type === "trueFalse"
-                ? userAnswer
-                : userAnswer
-                  ? question.options[userAnswer as keyof typeof question.options]
-                  : "Not answered"
+        <div className="space-y-6 mb-8">
+          <h2 className="text-2xl font-bold text-foreground">Detailed Review</h2>
+          <div className="space-y-6 max-h-[600px] overflow-y-auto pr-4">
+            {questions.map((question, idx) => {
+              const userAnswer = answers[idx]
+              const isCorrect = userAnswer === question.correctAnswer
 
-            return (
-              <div
-                key={question.id}
-                className={`p-4 rounded-lg border-2 ${
-                  isCorrect ? "border-green-500 bg-green-50" : "border-red-500 bg-red-50"
-                }`}
-              >
-                <div className="flex gap-3">
-                  <div className={`text-2xl ${isCorrect ? "text-green-600" : "text-red-600"}`}>
-                    {isCorrect ? "✓" : "✗"}
-                  </div>
-                  <div className="flex-1">
-                    <p className="font-semibold text-foreground mb-2">
-                      Q{idx + 1}: {question.question}
-                    </p>
-                    <div className="space-y-1 text-sm">
-                      <p className={isCorrect ? "text-green-700" : "text-red-700"}>Your answer: {userAnswerText}</p>
-                      {!isCorrect && (
-                        <p className="text-green-700">
-                          Correct answer:{" "}
-                          {question.type === "trueFalse"
-                            ? question.correctAnswer
-                            : question.options[question.correctAnswer as keyof typeof question.options]}
-                        </p>
-                      )}
+              return (
+                <div
+                  key={question.id}
+                  className={`p-6 rounded-lg border-2 ${
+                    isCorrect ? "border-green-500 bg-green-50" : "border-red-500 bg-red-50"
+                  }`}
+                >
+                  {/* Question Header */}
+                  <div className="flex items-start gap-3 mb-4">
+                    <div
+                      className={`text-2xl font-bold flex-shrink-0 ${isCorrect ? "text-green-600" : "text-red-600"}`}
+                    >
+                      {isCorrect ? "✓" : "✗"}
+                    </div>
+                    <div className="flex-1">
+                      <p className="font-bold text-foreground text-lg">
+                        Q{idx + 1}: {question.question}
+                      </p>
                     </div>
                   </div>
+
+                  {/* All Options */}
+                  <div className="space-y-2 mb-4 ml-11">
+                    {question.type === "mcq"
+                      ? Object.entries(question.options).map(([key, value]) => {
+                          const isUserSelected = userAnswer === key
+                          const isCorrectOption = key === question.correctAnswer
+
+                          return (
+                            <div
+                              key={key}
+                              className={`p-3 rounded text-sm ${
+                                isCorrectOption
+                                  ? "bg-green-200 border-2 border-green-600 font-semibold text-green-900"
+                                  : isUserSelected
+                                    ? "bg-red-200 border-2 border-red-600 font-semibold text-red-900"
+                                    : "bg-white border border-gray-300 text-foreground"
+                              }`}
+                            >
+                              <span className="font-bold">{key}.</span> {value}
+                              {isCorrectOption && <span className="ml-2 font-bold">(Correct Answer)</span>}
+                              {isUserSelected && !isCorrectOption && (
+                                <span className="ml-2 font-bold">(Your Answer)</span>
+                              )}
+                            </div>
+                          )
+                        })
+                      : // True/False options
+                        ["True", "False"].map((option) => {
+                          const isUserSelected = userAnswer === option
+                          const isCorrectOption = option === question.correctAnswer
+
+                          return (
+                            <div
+                              key={option}
+                              className={`p-3 rounded text-sm ${
+                                isCorrectOption
+                                  ? "bg-green-200 border-2 border-green-600 font-semibold text-green-900"
+                                  : isUserSelected
+                                    ? "bg-red-200 border-2 border-red-600 font-semibold text-red-900"
+                                    : "bg-white border border-gray-300 text-foreground"
+                              }`}
+                            >
+                              {option}
+                              {isCorrectOption && <span className="ml-2 font-bold">(Correct Answer)</span>}
+                              {isUserSelected && !isCorrectOption && (
+                                <span className="ml-2 font-bold">(Your Answer)</span>
+                              )}
+                            </div>
+                          )
+                        })}
+                    {!userAnswer && <p className="text-sm font-semibold text-red-700 italic">Not answered</p>}
+                  </div>
                 </div>
-              </div>
-            )
-          })}
+              )
+            })}
+          </div>
         </div>
 
         {/* Restart Button */}
