@@ -1,14 +1,20 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import QuizContainer from "@/components/quiz-container"
 import ResultsScreen from "@/components/results-screen"
 import { quizData } from "@/lib/quiz-data"
+import { shuffleArray } from "@/lib/shuffle"
 
 export default function Home() {
+  const [shuffledQuestions, setShuffledQuestions] = useState(quizData)
   const [currentQuestion, setCurrentQuestion] = useState(0)
   const [answers, setAnswers] = useState<(string | null)[]>(new Array(quizData.length).fill(null))
   const [isComplete, setIsComplete] = useState(false)
+
+  useEffect(() => {
+    setShuffledQuestions(shuffleArray(quizData))
+  }, [])
 
   const handleAnswerSelect = (optionKey: string) => {
     const newAnswers = [...answers]
@@ -17,7 +23,7 @@ export default function Home() {
   }
 
   const handleNext = () => {
-    if (currentQuestion < quizData.length - 1) {
+    if (currentQuestion < shuffledQuestions.length - 1) {
       setCurrentQuestion(currentQuestion + 1)
     } else {
       setIsComplete(true)
@@ -32,20 +38,21 @@ export default function Home() {
 
   const handleRestart = () => {
     setCurrentQuestion(0)
-    setAnswers(new Array(quizData.length).fill(null))
+    setAnswers(new Array(shuffledQuestions.length).fill(null))
     setIsComplete(false)
+    setShuffledQuestions(shuffleArray(quizData))
   }
 
   if (isComplete) {
-    return <ResultsScreen answers={answers} questions={quizData} onRestart={handleRestart} />
+    return <ResultsScreen answers={answers} questions={shuffledQuestions} onRestart={handleRestart} />
   }
 
   return (
     <main className="min-h-screen bg-background">
       <QuizContainer
-        question={quizData[currentQuestion]}
+        question={shuffledQuestions[currentQuestion]}
         questionNumber={currentQuestion + 1}
-        totalQuestions={quizData.length}
+        totalQuestions={shuffledQuestions.length}
         selectedAnswer={answers[currentQuestion]}
         onAnswerSelect={handleAnswerSelect}
         onNext={handleNext}
